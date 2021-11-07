@@ -3,6 +3,7 @@ const Dotenv = require('dotenv-webpack');
 /* eslint-enable */
 
 module.exports = {
+  swcMinify: true,
   compress: true,
   distDir: '.next',
   webpack(config, { webpack }) {

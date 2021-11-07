@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import next from 'next';
-import NextServer from 'next/dist/next-server/server/next-server';
+import * as next_1 from 'next/dist/server/next';
 
 @Injectable()
 export class ViewsService implements OnModuleInit {
@@ -15,7 +15,7 @@ export class ViewsService implements OnModuleInit {
     }
   }
 
-  getNextServer(): NextServer {
+  getNextServer(): next_1.NextServer {
     return this.server;
   }
 }
