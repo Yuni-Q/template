@@ -26,10 +26,6 @@ export const LineBrakingText = (text: ReactNode): ReactNode => {
 
 export interface DialogTemplateProps {
   message: string;
-  close: () => void;
-
-  show: boolean;
-  onChangeShow: (show: boolean) => void;
 
   onShow?: () => Promise<void>;
   onShown?: () => Promise<void>;
@@ -53,32 +49,23 @@ export const useDialog = ({
   onClose?: () => Promise<boolean>;
 }): {
   show: boolean;
-  onChangeShow: (bol: boolean) => void;
   close: () => Promise<void>;
   DialogTemplate: FC<DialogTemplateProps>;
 } => {
+  const [show, setShow] = useState(true);
   const { onClosed } = useDialogStore();
-  const [show, setShow] = useState(false);
-  const onChangeShow = (bol: boolean) => {
-    setShow(bol);
-  };
 
   const close = async () => {
     if (onClose && !(await onClose?.())) {
       return;
     }
 
-    onChangeShow(false);
+    setShow(false);
+
     onClosed(id || 0);
   };
 
   const DialogTemplate: FC<DialogTemplateProps> = ({
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    show,
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    onChangeShow,
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    close,
     message,
 
     onShow,
@@ -93,9 +80,9 @@ export const useDialog = ({
     renderContent,
     renderButton,
   }) => {
+    // TODO : FC 안에 있어서 1번만 불려야 하지만 여러번 불림
     useDidMount(() => {
       (document.querySelector(':focus') as HTMLElement)?.blur();
-      onChangeShow(true);
 
       // onShow를 부르고 애니메이션이 끝나는 300ms 후에 onShown을 호출
       onShow?.();
@@ -110,7 +97,20 @@ export const useDialog = ({
     });
 
     const _renderBackDrop = (): ReactElement => {
-      return <Backdrop show={show}>{_renderBody()}</Backdrop>;
+      return (
+        <Backdrop
+          show={show}
+          onClick={() => {
+            close();
+          }}>
+          <div
+            onClick={(event) => {
+              event.stopPropagation();
+            }}>
+            {_renderBody()}
+          </div>
+        </Backdrop>
+      );
     };
 
     const _renderBody = (): ReactElement => {
@@ -148,7 +148,6 @@ export const useDialog = ({
     };
 
     const ref = document.querySelector('.dialogs');
-
     return ref
       ? ReactDOM.createPortal(
           <div role="dialog" aria-modal="true">
@@ -159,13 +158,29 @@ export const useDialog = ({
       : null;
   };
 
-  return { show, onChangeShow, close, DialogTemplate };
+  return { show, close, DialogTemplate };
 };
 
 const Backdrop = styled.div<{ show: boolean }>`
-  transition: ${({ show }) => (show ? 'background 0.3s ease' : 'transform 0.3s step-end, background 0.3s ease')};
-  transform: ${({ show }) => (show ? 'translate(0)' : 'translate(9999px)')};
-  background: ${({ show }) => (show ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0)')};
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  opacity: 0;
+  animation: 0.3s forwards ${({ show }) => ` ${show ? 'fadeIn' : 'fadeOut'};`};
+  background: rgba(0, 0, 0, 0.4);
   position: fixed;
   top: 0;
   right: 0;
@@ -177,7 +192,6 @@ const Backdrop = styled.div<{ show: boolean }>`
 `;
 
 const Wrapper = styled.div<{ show: boolean }>`
-  display: ${({ show }) => (show ? 'block' : 'none')};
   width: 300px;
   position: absolute;
   left: 50%;

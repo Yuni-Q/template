@@ -1,35 +1,34 @@
 import React, { FC, ReactElement } from 'react';
 import styled, { css } from 'styled-components';
 
-import { DialogTemplateProps, useDialog, LineBrakingText } from './DialogTemplate';
+import { DialogProps } from './Dialog';
+import { useDialog, LineBrakingText } from './DialogTemplate';
 
-interface ToastProps
-  extends Omit<DialogTemplateProps, 'notBackdrop' | 'show' | 'onChangeShow' | 'onShow' | 'renderBody' | 'close'> {
+interface ToastProps extends Omit<DialogProps, 'notBackdrop' | 'onShow' | 'renderBody'> {
   id?: number;
 }
 
 export const Toast: FC<ToastProps> = (props) => {
   const TOAST_PORTAL_DURATION = 3000;
 
-  const { DialogTemplate, ...showProps } = useDialog({ id: props.id, onClose: props.onClose });
+  const { DialogTemplate, show, close } = useDialog({ id: props.id, onClose: props.onClose });
 
   return (
     <DialogTemplate
-      {...showProps}
       {...props}
       onShow={async (): Promise<void> => {
         const setTimeoutIds = [];
-        setTimeoutIds.push(setTimeout(() => showProps.close(), TOAST_PORTAL_DURATION) as unknown as number);
+        setTimeoutIds.push(setTimeout(() => close(), TOAST_PORTAL_DURATION) as unknown as number);
       }}
       notBackdrop={true}
       renderBody={(): ReactElement => {
         return (
           <ToastWrapper>
             <ToastComponent
-              show={showProps.show}
+              show={show}
               onClick={() => {
                 props.onConfirm?.(true);
-                showProps.close();
+                close();
               }}
               role="alert">
               {LineBrakingText(props.message)}

@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 
 import { DialogTemplateProps, useDialog } from './DialogTemplate';
 
-interface DialogProps extends Omit<DialogTemplateProps, 'show' | 'onChangeShow' | 'close'> {
+export interface DialogProps extends Omit<DialogTemplateProps, 'show' | 'close'> {
   id?: number;
 }
 

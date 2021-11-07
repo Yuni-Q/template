@@ -1,19 +1,19 @@
 import React, { FC } from 'react';
 import styled from 'styled-components';
 
-import { DialogTemplateProps, useDialog } from './DialogTemplate';
+import { DialogProps } from './Dialog';
+import { useDialog } from './DialogTemplate';
 
-interface DialogConfirmProps extends Omit<DialogTemplateProps, 'renderButton' | 'show' | 'onChangeShow' | 'close'> {
+interface DialogConfirmProps extends Omit<DialogProps, 'renderButton'> {
   id?: number;
   cancelLabel?: string;
 }
 
 export const DialogConfirm: FC<DialogConfirmProps> = (props) => {
-  const { DialogTemplate, ...showProps } = useDialog({ id: props.id, onClose: props.onClose });
+  const { DialogTemplate, close } = useDialog({ id: props.id, onClose: props.onClose });
 
   return (
     <DialogTemplate
-      {...showProps}
       {...props}
       renderButton={() => {
         return (
@@ -22,17 +22,15 @@ export const DialogConfirm: FC<DialogConfirmProps> = (props) => {
               fontWeight="400"
               onClick={async () => {
                 await props.onClose?.();
-                showProps.close();
-              }}
-            >
+                close();
+              }}>
               {props.cancelLabel || '취소'}
             </ConfirmButton>
             <ConfirmButton
               onClick={async () => {
                 await props.onConfirm?.(true);
-                showProps.close();
-              }}
-            >
+                close();
+              }}>
               {props.confirmLabel || '확인'}
             </ConfirmButton>
           </>
@@ -64,6 +62,7 @@ export const DialogButton = styled.button<{ fontWeight?: string }>`
     margin-left: -1px;
   }
 `;
+
 const ConfirmButton = styled(DialogButton)`
   width: 149.5px;
 `;
